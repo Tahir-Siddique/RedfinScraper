@@ -240,8 +240,8 @@ class RedfinScrapper:
                 for row in data:
                     if not is_city_allowed(county, row):
                         continue
-                    if row['propertyTypeName'].lower() in list(map(str.lower, EXCLUDED_PROP_TYPES)):
-                        continue
+                    # if row['propertyTypeName'].lower() in list(map(str.lower, EXCLUDED_PROP_TYPES)):
+                    #     continue
                     generated_row = [
                         row['mlsId'],
                         row['owner_name'],
