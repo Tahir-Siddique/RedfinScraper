@@ -6,6 +6,7 @@ import os
 import re
 from sys import platform
 import selectors
+import threading
 import time
 import aiohttp
 from bs4 import BeautifulSoup
@@ -38,8 +39,8 @@ class RedfinScrapper:
 
 
 
-    async def get_sale_history(self, items_queue, session, item,  retry=0):
-        await item["get_owner"](item["url"], items_queue, session, item)
+    def get_sale_history(self, item):
+        return item["get_owner"](item)
         
         # try:
         #     headers = {'user-agent': 'Redfin Android 458.0.1'}
@@ -71,9 +72,17 @@ class RedfinScrapper:
 
 
 
-    async def batch_items(self, q, items):
-        async with aiohttp.ClientSession() as session:
-            await asyncio.gather(*[asyncio.ensure_future(self.get_sale_history(q, session, item)) for item in items])
+    def batch_items(self, items):
+        threads = []
+        results = []
+        
+        for item in items:
+            thread = threading.Thread(target=lambda: results.append(self.get_sale_history(item)))
+            threads.append(thread)
+            thread.start()
+        for thread in threads:
+            thread.join()
+        return results
 
 
     def convert_utc_to_tz_string(self, string_date, tz):
