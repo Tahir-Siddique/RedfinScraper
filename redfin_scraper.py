@@ -41,7 +41,11 @@ class RedfinScrapper:
 
 
     def get_sale_history(self, item):
-        return item["get_owner"](item)
+        if "get_owner" in item:
+            return item["get_owner"](item)
+        item["owner_name"] = "Not found"
+        item.pop("get_owner")
+        return item
         
         # try:
         #     headers = {'user-agent': 'Redfin Android 458.0.1'}
