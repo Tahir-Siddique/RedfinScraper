@@ -17,6 +17,7 @@ def get_owner_by_kane_county(item):
     }
     # print()
     # print(item.get("url"))
+    
     response = requests.get("https://www.redfin.com"+item.get("url"), headers=headers)
     
     # async with session.get(url="https://www.redfin.com"+item.get("url"), headers=headers) as res:
@@ -35,11 +36,14 @@ def get_owner_by_kane_county(item):
     if "Parcel Number" not in parcelNumber:
         response = requests.get('https://kaneil.devnetwedge.com/parcel/view/'+parcelNumber, headers=headers, allow_redirects=True)
         soup = BeautifulSoup(response.text, "html.parser")
-        owner_name = soup.find("table").find("tr").find_all("td")[2].find_all("div")[1].getText().strip()
-        # print(owner_name)
-        item["owner_name"] = owner_name
-        item.pop("get_owner")
-        return item
+        try:
+            owner_name = soup.find("table").find("tr").find_all("td")[2].find_all("div")[1].getText().strip()
+            # print(owner_name)
+            item["owner_name"] = owner_name
+            item.pop("get_owner")
+            return item
+        except:
+            item["owner_name"] = "Not found"
     return item
 
 def send_mail(file_name):
