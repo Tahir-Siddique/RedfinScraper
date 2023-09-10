@@ -228,7 +228,7 @@ class RedfinScrapper:
         try:
             filename = 'Redfin %s.csv' % START_DATE
             pd = pandas.DataFrame(data)
-            pd.to_csv(data)
+            pd.to_csv(filename)
 
             # data = list(
             #     sorted(data, key=lambda row: str(row['status_date']), reverse=True))
