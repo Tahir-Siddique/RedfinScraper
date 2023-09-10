@@ -45,6 +45,8 @@ def get_owner_by_kane_county(item):
             return item
         except:
             item["owner_name"] = "Not found"
+    if "owner_name" not in item:
+        item["owner_name"] = "Not found"
     return item
 
 def send_mail(file_name):
