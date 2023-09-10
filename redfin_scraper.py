@@ -39,9 +39,7 @@ class RedfinScrapper:
 
 
     async def get_sale_history(self, items_queue, session, item,  retry=0):
-        item["owner_name"] = item["get_owner"](item["url"], session)
-        item.pop("get_owner")
-        await items_queue.put(item)
+        await item["get_owner"](item["url"], items_queue, session, item)
         
         # try:
         #     headers = {'user-agent': 'Redfin Android 458.0.1'}
