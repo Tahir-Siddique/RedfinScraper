@@ -10,7 +10,7 @@ def main():
     for county in COUNTIES:
         print('\n[-] Scraping : %s' % (county['county']))
         properties = scraper.get_properties(county)
-        max_concurrent_requests = 30
+        max_concurrent_requests = 50
         items = []
         
         chunks = [properties[i:i + max_concurrent_requests] for i in range(0, len(properties), max_concurrent_requests)]
