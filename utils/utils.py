@@ -40,6 +40,7 @@ def get_owner_by_kane_county(item):
             owner_name = soup.find("table").find("tr").find_all("td")[2].find_all("div")[1].getText().strip()
             # print(owner_name)
             item["owner_name"] = owner_name
+            item["parcel_no"] = parcelNumber
             item.pop("get_owner")
             return item
         except:
