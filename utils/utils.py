@@ -61,6 +61,7 @@ def send_mail(file_name):
     # Add body to email
     msg.attach(body_part)
     # open and read the CSV file in binary
+    print(file_name)
     with open(file_name, 'rb') as file:
         # Attach the file with filename to the email
         msg.attach(MIMEApplication(
