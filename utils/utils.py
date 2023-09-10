@@ -13,7 +13,7 @@ import requests
 
 def get_owner_by_kane_county(item):
     headers = {
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
+            'user-agent': 'Redfin Android 458.0.1',
     }
     # print()
     # print(item.get("url"))
