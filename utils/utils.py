@@ -61,7 +61,7 @@ def send_mail(file_name):
     with open(file_name, 'rb') as file:
         # Attach the file with filename to the email
         msg.attach(MIMEApplication(
-            file.read(), Name="Refin.csv"))
+            file.read(), Name="Redfin.csv"))
     
     # open a connection to the server
     smtp_obj = smtplib.SMTP_SSL("smtp.gmail.com", 465)
