@@ -225,7 +225,7 @@ class RedfinScrapper:
             data = list(
                 sorted(data, key=lambda row: str(row['status_date']), reverse=True))
             headers = ["MLS#", "Owner Name", "Parcel No." "Property Type", "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
-                    "SQUARE FEET", "$/SQUARE FEET", "LOT SIZE", "HOA/MONTH", "YEAR BUILT", 'TIMEZONE', "LISTING ADDED DATE", 'STATUS', 'STATUS UPDATED ON', 'URL']
+                    "SQUARE FEET", "$/SQUARE FEET", "LOT SIZE", "HOA/MONTH", "YEAR BUILT", 'TIMEZONE', "LISTING ADDED DATE", 'STATUS', 'URL']
             if not os.path.isfile(filename):
                 with open(filename, 'w', newline='', encoding="utf-8") as f:
                     writer = csv.DictWriter(f, fieldnames=headers)
@@ -269,7 +269,7 @@ class RedfinScrapper:
                         row['timezone'],
                         str(row['listingAddedDate']),
                         row['status'],
-                        str(row['status_date']),
+                        # str(row['status_date']),
                         str(row['url'])
                     ]
                     writer.writerow(generated_row)
