@@ -16,7 +16,7 @@ def get_owner_by_kane_county(item):
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
     }
     # print()
-    print(item.get("url"))
+    # print(item.get("url"))
     response = requests.get("https://www.redfin.com"+item.get("url"), headers=headers)
     
     # async with session.get(url="https://www.redfin.com"+item.get("url"), headers=headers) as res:
@@ -36,7 +36,7 @@ def get_owner_by_kane_county(item):
         response = requests.get('https://kaneil.devnetwedge.com/parcel/view/'+parcelNumber, headers=headers, allow_redirects=True)
         soup = BeautifulSoup(response.text, "html.parser")
         owner_name = soup.find("table").find("tr").find_all("td")[2].find_all("div")[1].getText().strip()
-        print(owner_name)
+        # print(owner_name)
         item["owner_name"] = owner_name
         item.pop("get_owner")
         return item

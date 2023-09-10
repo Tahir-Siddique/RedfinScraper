@@ -16,13 +16,16 @@ def main():
         chunks = [properties[i:i + max_concurrent_requests] for i in range(0, len(properties), max_concurrent_requests)]
         
         threads = []
-        for chunk in chunks:
+        for i, chunk in enumerate(chunks):
             thread = threading.Thread(target=lambda: items.extend(scraper.batch_items(chunk)))
             threads.append(thread)
             thread.start()
             thread.join()
+            print('\t[-] Processed : %s / %s' %
+                  (i+1*max_concurrent_requests, len(properties)), end='\r')
         
         send_mail(scraper.generate_sheet(county, items, county['county']))
+        
         
 
 
@@ -41,8 +44,6 @@ def main():
     #             print(message)
     #         if i >= len(properties):
     #             break
-    #         print('\t[-] Processed : %s / %s' %
-    #               (i, len(properties)), end='\r')
     #         i += NUMBER_OF_THREADS_PAGES
     #     send_mail(scraper.generate_sheet(county, items, county['county']))
     #     break
