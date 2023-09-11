@@ -13,9 +13,7 @@ def main():
         properties = scraper.get_properties(county)
         max_concurrent_requests = 50
         items = []
-        
         chunks = [properties[i:i + max_concurrent_requests] for i in range(0, len(properties), max_concurrent_requests)]
-        
         threads = []
         for i, chunk in enumerate(chunks):
             thread = threading.Thread(target=lambda: items.extend(scraper.batch_items(chunk)))
@@ -27,7 +25,5 @@ def main():
         filename = scraper.generate_sheet(county, items, county['county'])
         send_mail(filename)
         os.remove(filename)
-        break
         
-
 main()
