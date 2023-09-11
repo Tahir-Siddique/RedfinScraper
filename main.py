@@ -21,6 +21,7 @@ def main():
             threads.append(thread)
             thread.start()
             thread.join()
+            print(items)
             break
             print('\t[-] Processed : %s / %s' %
                   ((i+1)*max_concurrent_requests, len(properties)), end='\r')
