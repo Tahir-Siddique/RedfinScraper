@@ -11,7 +11,6 @@ import time
 import aiohttp
 from bs4 import BeautifulSoup
 from dateutil import parser
-import pandas
 
 import pytz
 import requests
@@ -40,40 +39,43 @@ class RedfinScrapper:
 
 
 
-    def get_sale_history(self, item):
-        if "get_owner" in item:
-            return item["get_owner"](item)
+    def get_sale_history(self, item, retry=0):
         item["owner_name"] = "Not found"
-        item.pop("get_owner")
-        return item
+        if "get_owner" in item and item.get("get_owner"):
+            item = item["get_owner"](item)
         
-        # try:
-        #     headers = {'user-agent': 'Redfin Android 458.0.1'}
-        #     url = 'https://www.redfin.com/stingray/mobile/api/v2/home/details/belowTheFold?propertyId=%s&listingId=%s&accessLevel=1&android-app-version-code=853' % (
-        #         item['propertyId'], item['listingId'])
-        #     async with session.get(url=url, headers=headers) as res:
-        #         html = await res.text()
-        #         data = json.loads(re.sub(r'\{\}&&', '', html))
-        #         if data['payload'].get('propertyHistoryInfo') is None:
-        #             return
-        #         events = data['payload']['propertyHistoryInfo']['events']
-        #         if len(events) == 0:
-        #             return
-        #         eventDescription = events[0].get('eventDescription')
-        #         if eventDescription is None or re.search(r'sold|delisted|price changed', eventDescription.lower()) is not None:
-        #             return
-        #         item['status'] = '%s / %s' % (events[0].get('eventDescription') or '-', events[0].get('mlsDescription') or '-') if len(
-        #             events) > 0 else '-'
-        #         item['status_date'] = self.convert_utc_to_tz_date(datetime.fromtimestamp(
-        #             events[0]['eventDate']/1000, tz=pytz.timezone(data['payload']['publicRecordsInfo']['basicInfo']['displayTimeZone'])), item['timezone']) if len(
-        #             events) > 0 else '-'
-        #         item['propertyTypeName'] = data['payload']['publicRecordsInfo']['basicInfo'].get(
-        #             'propertyTypeName') or '-'
-        #         items_queue.put(item)
-        # except Exception as e:
-        #     if retry < 10:
-        #         time.sleep(1)
-        #         await self.get_sale_history(items_queue, session, item, retry+1)
+        try:
+            headers = {'user-agent': 'Redfin Android 458.0.1'}
+            url = 'https://www.redfin.com/stingray/mobile/api/v2/home/details/belowTheFold?propertyId=%s&listingId=%s&accessLevel=1&android-app-version-code=853' % (
+                item['propertyId'], item['listingId'])
+            req = requests.get(url=url, headers=headers)
+            html = req.text
+            data = json.loads(re.sub(r'\{\}&&', '', html))
+            if data['payload'].get('propertyHistoryInfo') is None:
+                return
+            events = data['payload']['propertyHistoryInfo']['events']
+            if len(events) == 0:
+                return
+            eventDescription = events[0].get('eventDescription')
+            if eventDescription is None or re.search(r'sold|delisted|price changed', eventDescription.lower()) is not None:
+                return
+            item['status'] = '%s / %s' % (events[0].get('eventDescription') or '-', events[0].get('mlsDescription') or '-') if len(
+                events) > 0 else '-'
+            item['status_date'] = self.convert_utc_to_tz_date(datetime.fromtimestamp(
+                events[0]['eventDate']/1000, tz=pytz.timezone(data['payload']['publicRecordsInfo']['basicInfo']['displayTimeZone'])), item['timezone']) if len(
+                events) > 0 else '-'
+            item['propertyTypeName'] = data['payload']['publicRecordsInfo']['basicInfo'].get(
+                'propertyTypeName') or '-'
+            
+            return item
+            
+        except Exception as e:
+            if retry < 10:
+                time.sleep(1)
+                return self.get_sale_history(item, retry+1)
+        
+        
+        
 
 
 
@@ -186,7 +188,7 @@ class RedfinScrapper:
                     'lotSize':_property['homeData'].get('lotSize').get('amount') or '-',
                     'addressInfo':_property['homeData'].get('addressInfo') or None,
                     'url':_property['homeData']['url'],
-                    'get_owner': None if "get_owner" not in place else place["get_owner"],
+                    'get_owner': place.get("get_owner"),
                     'mlsId':_property['homeData'].get('mlsId') or '-',
                     'hoaDues':_property['homeData']['hoaDues'].get('amount') or '-',
                     'timezone':_property['homeData'].get('timezone') or '-'
@@ -218,6 +220,7 @@ class RedfinScrapper:
 
 
     def generate_sheet(self, county, data, county_name):
+       
         def is_city_allowed(county, row):
             if county.get('city_price') is None:
                 return True
@@ -226,64 +229,59 @@ class RedfinScrapper:
             return (row['addressInfo']['city'] if row['addressInfo'] is not None else '-') in county['city_price'].get('cities') \
                 or (float(row.get('priceInfo')) >= county['city_price']['others_price'])
         try:
-            filename = 'Redfin %s.csv' % START_DATE
-            pd = pandas.DataFrame(data)
-            pd.to_csv(filename)
-
-            # data = list(
-            #     sorted(data, key=lambda row: str(row['status_date']), reverse=True))
-            # headers = ["MLS#", "Owner Name", "Parcel No." 
-            #         #    "Property Type",
-            #             "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
-            #         "SQUARE FEET", "$/SQUARE FEET", "LOT SIZE", "HOA/MONTH", "YEAR BUILT", 'TIMEZONE', "LISTING ADDED DATE", 'STATUS', 'URL']
-            # if not os.path.isfile(filename):
-            #     with open(filename, 'w', newline='', encoding="utf-8") as f:
-            #         writer = csv.DictWriter(f, fieldnames=headers)
-            #         writer.writeheader()
-            #         writer = csv.writer(
-            #             f, delimiter=',', quoting=csv.QUOTE_ALL)
-            # with open(filename, 'a', newline='', encoding="utf-8") as f:
-            #     writer = csv.writer(
-            #         f, delimiter=',', quoting=csv.QUOTE_ALL, doublequote=False)
-            #     for row in data:
-            #         if not is_city_allowed(county, row):
-            #             continue
-            #         # if row['propertyTypeName'].lower() in list(map(str.lower, EXCLUDED_PROP_TYPES)):
-            #         #     continue
-            #         generated_row = [
-            #             row['mlsId'],
-            #             row['owner_name'],
-            #             row['parcel_no'],
-            #             # row['propertyTypeName'],
-            #             row['addressInfo']['formattedStreetLine'] if row['addressInfo'] is not None and row['addressInfo'].get(
-            #                 'formattedStreetLine') is not None else '-',
-            #             row['addressInfo']['city'] if row['addressInfo'] is not None and row['addressInfo'].get(
-            #                 'city') is not None else '-',
-            #             row['addressInfo']['state'] if row['addressInfo'] is not None and row['addressInfo'].get(
-            #                 'state') else '-',
-            #             str(row['addressInfo']['zip']
-            #                 if row['addressInfo'] is not None and row['addressInfo'].get(
-            #                 'zip') else '-'),
-            #             row['addressInfo']['location'] if row['addressInfo'] is not None and row['addressInfo'].get(
-            #                 'location') is not None else '-',
-            #             county_name,
-            #             row.get('priceInfo') or '-',
-            #             str(row['beds']),
-            #             str(row['baths']),
-            #             row['sqftInfo'] or '-',
-            #             round(float(row['priceInfo'])/float(row['sqftInfo'])
-            #                 ) if row['sqftInfo'] is not None and row['priceInfo'] is not None and float(row['sqftInfo']) > 0 else '-',
-            #             str(row['lotSize']),
-            #             str(row['hoaDues']),
-            #             str(row['yearBuilt']),
-            #             row['timezone'],
-            #             str(row['listingAddedDate']),
-            #             row['status'],
-            #             # str(row['status_date']),
-            #             str(row['url'])
-            #         ]
-            #         writer.writerow(generated_row)
+            filename = 'Redfin %s.csv' % (
+                START_DATE)
+            data = list(
+                sorted(data, key=lambda row: str(row['status_date']), reverse=True))
+            headers = ["MLS#", "Property Type","Owner Name", "Parcel No.", "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
+                    "SQUARE FEET", "$/SQUARE FEET", "LOT SIZE", "HOA/MONTH", "YEAR BUILT", 'TIMEZONE', "LISTING ADDED DATE", 'STATUS', 'STATUS UPDATED ON', 'URL']
+            if not os.path.isfile(filename):
+                with open(filename, 'w', newline='', encoding="utf-8") as f:
+                    writer = csv.DictWriter(f, fieldnames=headers)
+                    writer.writeheader()
+                    writer = csv.writer(
+                        f, delimiter=',', quoting=csv.QUOTE_ALL)
+            with open(filename, 'a', newline='', encoding="utf-8") as f:
+                writer = csv.writer(
+                    f, delimiter=',', quoting=csv.QUOTE_ALL, doublequote=False)
+                for row in data:
+                    if not is_city_allowed(county, row):
+                        continue
+                    if row['propertyTypeName'].lower() in list(map(str.lower, EXCLUDED_PROP_TYPES)):
+                        continue
+                    generated_row = [
+                        row['mlsId'],
+                        row['propertyTypeName'],
+                        row['owner_name'],
+                        row['parcel_no'],
+                        row['addressInfo']['formattedStreetLine'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                            'formattedStreetLine') is not None else '-',
+                        row['addressInfo']['city'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                            'city') is not None else '-',
+                        row['addressInfo']['state'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                            'state') else '-',
+                        str(row['addressInfo']['zip']
+                            if row['addressInfo'] is not None and row['addressInfo'].get(
+                            'zip') else '-'),
+                        row['addressInfo']['location'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                            'location') is not None else '-',
+                        county_name,
+                        row.get('priceInfo') or '-',
+                        str(row['beds']),
+                        str(row['baths']),
+                        row['sqftInfo'] or '-',
+                        round(float(row['priceInfo'])/float(row['sqftInfo'])
+                            ) if row['sqftInfo'] is not None and row['priceInfo'] is not None and float(row['sqftInfo']) > 0 else '-',
+                        str(row['lotSize']),
+                        str(row['hoaDues']),
+                        str(row['yearBuilt']),
+                        row['timezone'],
+                        str(row['listingAddedDate']),
+                        row['status'],
+                        str(row['status_date']),
+                        str(row['url'])
+                    ]
+                    writer.writerow(generated_row)
             return filename
         except Exception as e:
-            message = '[generate_sheet:%s] %s' % (county_name, str(e))
-            print(message, flush=True)
+            print(str(e), flush=True)

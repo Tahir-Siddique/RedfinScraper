@@ -34,9 +34,10 @@ def get_owner_by_kane_county(item):
 
                 parcelNumber = li.getText(strip=True).split(":")[1].strip()
     if "Parcel Number" not in parcelNumber:
-        response = requests.get('https://kaneil.devnetwedge.com/parcel/view/'+parcelNumber, headers=headers, allow_redirects=True)
-        soup = BeautifulSoup(response.text, "html.parser")
+
         try:
+            response = requests.get('https://kaneil.devnetwedge.com/parcel/view/'+parcelNumber, headers=headers, allow_redirects=True)
+            soup = BeautifulSoup(response.text, "html.parser")
             owner_name = soup.find("table").find("tr").find_all("td")[2].find_all("div")[1].getText().strip()
             # print(owner_name)
             item["owner_name"] = owner_name
@@ -47,6 +48,8 @@ def get_owner_by_kane_county(item):
             item["owner_name"] = "Not found"
     if "owner_name" not in item:
         item["owner_name"] = "Not found"
+    if "parcel_no" not in item:
+        item["parcel_no"] = "Not found"
     return item
 
 def send_mail(file_name):

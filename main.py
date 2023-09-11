@@ -24,31 +24,8 @@ def main():
             # print(items)
             print('\t[-] Processed : %s / %s' %
                   ((i+1)*max_concurrent_requests, len(properties)), end='\r')
+        print("County Completed", end='\r')
         send_mail(scraper.generate_sheet(county, items, county['county']))
         
-        
-
-
-    #     # print(properties)
-    #     i = 0
-    #     items_queue = Queue()
-    #     items = []
-    #     while True:
-    #         try:
-    #             asyncio.run()
-    #             while not items_queue.empty():
-    #                 items.append(items_queue.get())
-    #         except Exception as e:
-    #             message = '[asyncio-handle_batch] %s' % str(e)
-    #             # sendMessage(message=message)
-    #             print(message)
-    #         if i >= len(properties):
-    #             break
-    #         i += NUMBER_OF_THREADS_PAGES
-    #     send_mail(scraper.generate_sheet(county, items, county['county']))
-    #     break
-    # print('[-] All Done.')
-    
-
 
 main()
