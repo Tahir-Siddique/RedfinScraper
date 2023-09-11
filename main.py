@@ -25,6 +25,7 @@ def main():
             print('\t[-] Processed : %s / %s' %
                   ((i+1)*max_concurrent_requests, len(properties)), end='\r')
         print("County Completed", end='\r')
+        print(items)
         send_mail(scraper.generate_sheet(county, items, county['county']))
         break
         
