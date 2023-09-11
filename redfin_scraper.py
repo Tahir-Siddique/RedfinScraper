@@ -205,9 +205,10 @@ class RedfinScrapper:
         # try:
         filename = 'Redfin %s.csv' % (
             START_DATE)
+        filtered_data = [row for row in data if row and 'status_date' in row and row['status_date'] is not None]
         # print(data)
         data = list(
-            sorted(data, key=lambda row: str(row['status_date']) if row else None, reverse=True))
+            sorted(filtered_data, key=lambda row: str(row['status_date']), reverse=True))
         headers = ["MLS#", "Property Type",  "Owner Name",  "Parcel No.", "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
                 "SQUARE FEET", "$/SQUARE FEET", "LOT SIZE", "HOA/MONTH", "YEAR BUILT", 'TIMEZONE', "LISTING ADDED DATE", 'STATUS', 'STATUS UPDATED ON', 'URL']
         if not os.path.isfile(filename):
