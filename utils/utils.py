@@ -25,7 +25,7 @@ def get_owner_by_lake_county(item):
     item["parcel_no"] = "Not found"
     
     
-    proxy = PROXIES[random.randint(0, len(PROXIES)-1)]
+    # proxy = PROXIES[random.randint(0, len(PROXIES)-1)]
     
     try:
         cookies = {
@@ -78,7 +78,7 @@ def get_owner_by_lake_county(item):
             'inpOwner2': '',
             'inpNo': item.get("addressInfo").get("formattedStreetLine").split(" ")[0], # House Nuumber
             'inpDir': '',
-            'inpStreet': item.get("addressInfo").get("formattedStreetLine").split(" ")[-2],
+            'inpStreet': ''.join(item.get("addressInfo").get("formattedStreetLine").split(" ")[1:-2]),
             'inpBookPage': '',
             'inpSuf': item.get("addressInfo").get("formattedStreetLine").split(" ")[-1], # Suffix
             'inpAltid': '',
@@ -124,35 +124,39 @@ def get_owner_by_kane_county(item):
     }
     item["owner_name"] = "Not found"
     item["parcel_no"] = "Not found"
-    
-    try:
-        proxy = PROXIES[random.randint(0, len(PROXIES)-1)]
-        response = requests.get(url + item.get("url"), headers=headers, proxies=proxy, timeout=5)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, features="html.parser")
-            elems = soup.find_all("div", {"class": "amenity-group"})
-            parcelNumber = "Parcel Number"
-            for elem in elems:
-                elem.getText(strip=True)
-                for li in elem.find("ul").find_all("li"):
-                    if parcelNumber in li.getText(strip=True):
-                        item["parcel_no"] = li.getText(strip=True).split(":")[1].strip()
-            
-            try:
-                response = requests.get('https://kaneil.devnetwedge.com/parcel/view/'+parcelNumber, headers=headers, allow_redirects=True, proxies={"http": proxy_url, "https": proxy_url}, timeout=5)
-                soup = BeautifulSoup(response.text, "html.parser")
-                owner_name = soup.find("table").find("tr").find_all("td")[2].find_all("div")[1].getText().strip()
-                item["owner_name"] = owner_name
-                item["parcel_no"] = parcelNumber
-                item.pop("get_owner")
-                return item
-            except Exception as e:
-                print(f"Error while getting owner details with proxy {proxy.get('http')}: {str(e)}")
-        else:
-            print(f"Request failed for {url + item.get('url')}: {proxy.get('http')} - Status Code: {response.status_code}. Trying again")
-    except Exception as e:
-        print(f"Unable to process", url + item.get("url"))
-    
+
+    # proxy = PROXIES[random.randint(0, len(PROXIES)-1)]
+    response = requests.get(
+        url + item.get("url"), 
+        headers=headers, 
+        # proxies=proxy, 
+        timeout=5
+    )
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, features="html.parser")
+        elems = soup.find_all("div", {"class": "amenity-group"})
+        parcelNumber = "Parcel Number"
+        for elem in elems:
+            elem.getText(strip=True)
+            for li in elem.find("ul").find_all("li"):
+                if parcelNumber in li.getText(strip=True):
+                    item["parcel_no"] = li.getText(strip=True).split(":")[1].strip()
+        
+        try:
+            response = requests.get(
+                'https://kaneil.devnetwedge.com/parcel/view/'+parcelNumber, 
+                headers=headers, 
+                allow_redirects=True,
+                # proxies={"http": proxy_url, "https": proxy_url}, 
+                timeout=5)
+            soup = BeautifulSoup(response.text, "html.parser")
+            owner_name = soup.find("table").find("tr").find_all("td")[2].find_all("div")[1].getText().strip()
+            item["owner_name"] = owner_name
+            item["parcel_no"] = parcelNumber
+            item.pop("get_owner")
+            return item
+        except Exception as e:
+            pass
     return item
 
 def send_mail(file_name):
