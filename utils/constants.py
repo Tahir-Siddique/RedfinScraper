@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from utils.utils import get_owner_by_kane_county
+from utils.utils import get_owner_by_kane_county, get_owner_by_lake_county
 
 
 START_DATE = datetime.now().strftime('%d.%m.%Y')
@@ -12,6 +12,14 @@ SENDER_APP_PASSWORD = 'ywykrababxcybpjv'
 NUMBER_OF_THREADS_PAGES = 20
 
 COUNTIES = [
+    
+    {
+        'region_type': 5,  # type: County
+        'region_id': 760,
+        'county': 'Lake County',
+        'min_price': 250000,
+        "get_owner": get_owner_by_lake_county
+    },
     {
         'region_type': 5,  # type: County
         'region_id': 756,

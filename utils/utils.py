@@ -3,12 +3,54 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
-import json
 import smtplib
 import time
 from bs4 import BeautifulSoup
 
 import requests
+
+
+def get_owner_by_lake_county(item):
+    headers = {
+            'user-agent': 'Redfin Android 458.0.1',
+    }
+    # print()
+    # print(item.get("url"))
+    
+    response = requests.get("https://www.redfin.com"+item.get("url"), headers=headers)
+    
+    # async with session.get(url="https://www.redfin.com"+item.get("url"), headers=headers) as res:
+        
+        # html = await res.text()
+        # soup = BeautifulSoup(html, features="html.parser")
+    soup = BeautifulSoup(response.text, features="html.parser")
+    elems = soup.find_all("div", {"class":"amenity-group"})
+    parcelNumber = "Parcel Number"
+    for elem in elems:
+        elem.getText(strip=True)
+        for li in elem.find("ul").find_all("li"):
+            if parcelNumber in li.getText(strip=True):
+
+                parcelNumber = li.getText(strip=True).split(":")[1].strip()
+                item["parcel_no"] = parcelNumber
+    # if "Parcel Number" not in parcelNumber:
+
+    #     try:
+    #         response = requests.get('https://kaneil.devnetwedge.com/parcel/view/'+parcelNumber, headers=headers, allow_redirects=True)
+    #         soup = BeautifulSoup(response.text, "html.parser")
+    #         owner_name = soup.find("table").find("tr").find_all("td")[2].find_all("div")[1].getText().strip()
+    #         # print(owner_name)
+    #         item["owner_name"] = owner_name
+    #         item["parcel_no"] = parcelNumber
+    #         item.pop("get_owner")
+    #         return item
+    #     except:
+    #         item["owner_name"] = "Not found"
+    if "owner_name" not in item:
+        item["owner_name"] = "Not found"
+    if "parcel_no" not in item:
+        item["parcel_no"] = "Not found"
+    return item
 
 
 def get_owner_by_kane_county(item):
