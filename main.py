@@ -25,6 +25,6 @@ def main():
         filename = scraper.generate_sheet(county, items, county['county'])
         send_mail(filename)
         os.remove(filename)
-        break
+        # break
         
 main()
