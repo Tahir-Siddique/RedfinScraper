@@ -89,6 +89,7 @@ class RedfinScrapper:
             thread.start()
         for thread in threads:
             thread.join()
+        print(results)
         return results
 
 
