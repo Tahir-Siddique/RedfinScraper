@@ -281,5 +281,7 @@ class RedfinScrapper:
                         str(row['url'])
                     ]
                     writer.writerow(generated_row)
+            return filename
         except Exception as e:
             message = '[generate_sheet:%s] %s' % (county_name, str(e))
+            print(message)
