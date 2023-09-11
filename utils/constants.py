@@ -12,7 +12,13 @@ SENDER_APP_PASSWORD = 'ywykrababxcybpjv'
 NUMBER_OF_THREADS_PAGES = 20
 
 COUNTIES = [
-    
+    {
+        'region_type': 5,
+        'region_id': 733,
+        'county': 'DuPage County',
+        "parcel_url":"https://propertylookup.dupagecounty.gov/search/commonsearch.aspx?mode=parid",
+        'min_price': 250000,
+    },
     {
         'region_type': 5,  # type: County
         'region_id': 760,
@@ -63,13 +69,6 @@ COUNTIES = [
                        'Buffalo Grove',
                        'Long Grove', ]
         }
-    },
-    {
-        'region_type': 5,
-        'region_id': 733,
-        'county': 'DuPage County',
-        "parcel_url":"https://propertylookup.dupagecounty.gov/search/commonsearch.aspx?mode=parid",
-        'min_price': 250000,
     },
     {
         'region_type': 5,
