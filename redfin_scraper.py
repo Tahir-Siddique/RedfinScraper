@@ -101,31 +101,6 @@ class RedfinScrapper:
         return _tz.normalize(date.astimezone(_tz))
 
     
-    def get_parcel_and_owner(self, url):
-        headers = {
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
-        }
-
-        response = requests.get('https://www.redfin.com'+url, headers=headers)
-        soup = BeautifulSoup(response.text, features="html.parser")
-        elems = soup.find_all("div", {"class":"amenity-group"})
-        parcelNumber = "Parcel Number"
-        for elem in elems:
-            elem.getText(strip=True)
-            for li in elem.find("ul").find_all("li"):
-                if parcelNumber in li.getText(strip=True):
-                    parcelNumber = li.getText(strip=True).split(":")[1].strip()
-        resp = {}
-        if "Parcel Number" not in parcelNumber:
-            response = requests.get('https://kaneil.devnetwedge.com/parcel/view/'+parcelNumber, headers=headers, allow_redirects=True)
-            print(response)
-            soup = BeautifulSoup(response.text, "html.parser")
-            owner_name = soup.find("table").find("tr").find_all("td")[2].find_all("div")[1].getText().strip()
-            
-            resp["name"] = "Owner"
-            return {"parcel_no": parcelNumber, "owner_name": owner_name}
-        return None
-    
     def get_properties(self, place):
         headers = {
             'user-agent': 'Redfin Android 458.0.1',
@@ -170,7 +145,6 @@ class RedfinScrapper:
                         'v': '6',
                         'status': '131',
                         'android-app-version-code': '853', }
-                data = dict(params)
                 req = requests.get(
                     'https://www.redfin.com/stingray/mobile/v1/gis-proto-mobile', headers=headers, params=params)
                 req_json = req.json()
@@ -232,8 +206,8 @@ class RedfinScrapper:
         filename = 'Redfin %s.csv' % (
             START_DATE)
         # print(data)
-        # data = list(
-        #     sorted(data, key=lambda row: str(row['status_date']), reverse=True))
+        data = list(
+            sorted(data, key=lambda row: str(row['status_date']) if row else None, reverse=True))
         headers = ["MLS#", "Property Type", "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
                 "SQUARE FEET", "$/SQUARE FEET", "LOT SIZE", "HOA/MONTH", "YEAR BUILT", 'TIMEZONE', "LISTING ADDED DATE", 'STATUS', 'STATUS UPDATED ON', 'URL']
         if not os.path.isfile(filename):
@@ -246,42 +220,42 @@ class RedfinScrapper:
             writer = csv.writer(
                 f, delimiter=',', quoting=csv.QUOTE_ALL, doublequote=False)
             for row in data:
-                print(row)
-                if not is_city_allowed(county, row):
-                    continue
-                if row['propertyTypeName'].lower() in list(map(str.lower, EXCLUDED_PROP_TYPES)):
-                    continue
-                generated_row = [
-                    row['mlsId'],
-                    row['propertyTypeName'],
-                    row['addressInfo']['formattedStreetLine'] if row['addressInfo'] is not None and row['addressInfo'].get(
-                        'formattedStreetLine') is not None else '-',
-                    row['addressInfo']['city'] if row['addressInfo'] is not None and row['addressInfo'].get(
-                        'city') is not None else '-',
-                    row['addressInfo']['state'] if row['addressInfo'] is not None and row['addressInfo'].get(
-                        'state') else '-',
-                    str(row['addressInfo']['zip']
-                        if row['addressInfo'] is not None and row['addressInfo'].get(
-                        'zip') else '-'),
-                    row['addressInfo']['location'] if row['addressInfo'] is not None and row['addressInfo'].get(
-                        'location') is not None else '-',
-                    county_name,
-                    row.get('priceInfo') or '-',
-                    str(row['beds']),
-                    str(row['baths']),
-                    row['sqftInfo'] or '-',
-                    round(float(row['priceInfo'])/float(row['sqftInfo'])
-                        ) if row['sqftInfo'] is not None and row['priceInfo'] is not None and float(row['sqftInfo']) > 0 else '-',
-                    str(row['lotSize']),
-                    str(row['hoaDues']),
-                    str(row['yearBuilt']),
-                    row['timezone'],
-                    str(row['listingAddedDate']),
-                    row['status'],
-                    str(row['status_date']),
-                    str(row['url'])
-                ]
-                writer.writerow(generated_row)
+                if row:
+                    if not is_city_allowed(county, row):
+                        continue
+                    if row['propertyTypeName'].lower() in list(map(str.lower, EXCLUDED_PROP_TYPES)):
+                        continue
+                    generated_row = [
+                        row['mlsId'],
+                        row['propertyTypeName'],
+                        row['addressInfo']['formattedStreetLine'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                            'formattedStreetLine') is not None else '-',
+                        row['addressInfo']['city'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                            'city') is not None else '-',
+                        row['addressInfo']['state'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                            'state') else '-',
+                        str(row['addressInfo']['zip']
+                            if row['addressInfo'] is not None and row['addressInfo'].get(
+                            'zip') else '-'),
+                        row['addressInfo']['location'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                            'location') is not None else '-',
+                        county_name,
+                        row.get('priceInfo') or '-',
+                        str(row['beds']),
+                        str(row['baths']),
+                        row['sqftInfo'] or '-',
+                        round(float(row['priceInfo'])/float(row['sqftInfo'])
+                            ) if row['sqftInfo'] is not None and row['priceInfo'] is not None and float(row['sqftInfo']) > 0 else '-',
+                        str(row['lotSize']),
+                        str(row['hoaDues']),
+                        str(row['yearBuilt']),
+                        row['timezone'],
+                        str(row['listingAddedDate']),
+                        row['status'],
+                        str(row['status_date']),
+                        str(row['url'])
+                    ]
+                    writer.writerow(generated_row)
         return filename
         # except Exception as e:
         #     message = '[generate_sheet:%s] %s' % (county_name, str(e))
