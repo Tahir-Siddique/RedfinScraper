@@ -13,11 +13,11 @@ NUMBER_OF_THREADS_PAGES = 20
 
 COUNTIES = [
     {
-        'region_type': 5,
-        'region_id': 733,
-        'county': 'DuPage County',
-        "parcel_url":"https://propertylookup.dupagecounty.gov/search/commonsearch.aspx?mode=parid",
+        'region_type': 5,  # type: County
+        'region_id': 756,
+        'county': 'Kane County',
         'min_price': 250000,
+        "get_owner": get_owner_by_kane_county
     },
     {
         'region_type': 5,  # type: County
@@ -27,11 +27,11 @@ COUNTIES = [
         "get_owner": get_owner_by_lake_county
     },
     {
-        'region_type': 5,  # type: County
-        'region_id': 756,
-        'county': 'Kane County',
+        'region_type': 5,
+        'region_id': 733,
+        'county': 'DuPage County',
+        "parcel_url":"https://propertylookup.dupagecounty.gov/search/commonsearch.aspx?mode=parid",
         'min_price': 250000,
-        "get_owner": get_owner_by_kane_county
     },
     {
         'region_type': 5,  # County type
