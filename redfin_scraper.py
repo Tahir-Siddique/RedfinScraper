@@ -70,6 +70,7 @@ class RedfinScrapper:
             return item
             
         except Exception as e:
+            print(str(e))
             if retry < 10:
                 time.sleep(1)
                 return self.get_sale_history(item, retry+1)
