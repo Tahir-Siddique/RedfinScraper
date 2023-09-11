@@ -61,7 +61,7 @@ class RedfinScrapper:
                 return
             item['status'] = '%s / %s' % (events[0].get('eventDescription') or '-', events[0].get('mlsDescription') or '-') if len(
                 events) > 0 else '-'
-            item['status_date'] = self.convert_utc_to_tz_date(datetime.fromtimestamp(
+            item['status_date'] = self.convert_utc_to_tz_date(datetime.datetime.fromtimestamp(
                 events[0]['eventDate']/1000, tz=pytz.timezone(data['payload']['publicRecordsInfo']['basicInfo']['displayTimeZone'])), item['timezone']) if len(
                 events) > 0 else '-'
             item['propertyTypeName'] = data['payload']['publicRecordsInfo']['basicInfo'].get(
