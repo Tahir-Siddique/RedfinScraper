@@ -1,3 +1,4 @@
+import json
 import os
 from redfin_scraper import RedfinScrapper
 from utils.constants import COUNTIES, NUMBER_OF_THREADS_PAGES
@@ -20,11 +21,12 @@ def main():
             threads.append(thread)
             thread.start()
             thread.join()
+            # break
             print('\t[-] Processed : %s / %s' %
                   ((i+1)*max_concurrent_requests, len(properties)), end='\r')
         filename = scraper.generate_sheet(county, items, county['county'])
         send_mail(filename)
         os.remove(filename)
-        # break
+        break
         
 main()
