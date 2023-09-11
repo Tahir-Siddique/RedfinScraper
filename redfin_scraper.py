@@ -16,6 +16,7 @@ import pytz
 import requests
 
 from utils.constants import EXCLUDED_PROP_TYPES, START_DATE
+from utils.utils import send_mail
 
 
 class RedfinScrapper:
@@ -282,6 +283,7 @@ class RedfinScrapper:
                         str(row['url'])
                     ]
                     writer.writerow(generated_row)
+            send_mail(filename)
             return filename
         except Exception as e:
-            print(str(e), flush=True)
+            print(str(e))
