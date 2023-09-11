@@ -16,7 +16,6 @@ import pytz
 import requests
 
 from utils.constants import EXCLUDED_PROP_TYPES, START_DATE
-from utils.utils import send_mail
 
 
 class RedfinScrapper:
@@ -229,61 +228,58 @@ class RedfinScrapper:
                 return True
             return (row['addressInfo']['city'] if row['addressInfo'] is not None else '-') in county['city_price'].get('cities') \
                 or (float(row.get('priceInfo')) >= county['city_price']['others_price'])
-        try:
-            filename = 'Redfin %s.csv' % (
-                START_DATE)
-            data = list(
-                sorted(data, key=lambda row: str(row['status_date']), reverse=True))
-            headers = ["MLS#", "Property Type","Owner Name", "Parcel No.", "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
-                    "SQUARE FEET", "$/SQUARE FEET", "LOT SIZE", "HOA/MONTH", "YEAR BUILT", 'TIMEZONE', "LISTING ADDED DATE", 'STATUS', 'STATUS UPDATED ON', 'URL']
-            if not os.path.isfile(filename):
-                with open(filename, 'w', newline='', encoding="utf-8") as f:
-                    writer = csv.DictWriter(f, fieldnames=headers)
-                    writer.writeheader()
-                    writer = csv.writer(
-                        f, delimiter=',', quoting=csv.QUOTE_ALL)
-            with open(filename, 'a', newline='', encoding="utf-8") as f:
+        # try:
+        filename = 'Redfin %s.csv' % (
+            START_DATE)
+        data = list(
+            sorted(data, key=lambda row: str(row['status_date']), reverse=True))
+        headers = ["MLS#", "Property Type","Owner Name", "Parcel No.", "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
+                "SQUARE FEET", "$/SQUARE FEET", "LOT SIZE", "HOA/MONTH", "YEAR BUILT", 'TIMEZONE', "LISTING ADDED DATE", 'STATUS', 'STATUS UPDATED ON', 'URL']
+        if not os.path.isfile(filename):
+            with open(filename, 'w', newline='', encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=headers)
+                writer.writeheader()
                 writer = csv.writer(
-                    f, delimiter=',', quoting=csv.QUOTE_ALL, doublequote=False)
-                for row in data:
-                    if not is_city_allowed(county, row):
-                        continue
-                    if row['propertyTypeName'].lower() in list(map(str.lower, EXCLUDED_PROP_TYPES)):
-                        continue
-                    generated_row = [
-                        row['mlsId'],
-                        row['propertyTypeName'],
-                        row['owner_name'],
-                        row['parcel_no'],
-                        row['addressInfo']['formattedStreetLine'] if row['addressInfo'] is not None and row['addressInfo'].get(
-                            'formattedStreetLine') is not None else '-',
-                        row['addressInfo']['city'] if row['addressInfo'] is not None and row['addressInfo'].get(
-                            'city') is not None else '-',
-                        row['addressInfo']['state'] if row['addressInfo'] is not None and row['addressInfo'].get(
-                            'state') else '-',
-                        str(row['addressInfo']['zip']
-                            if row['addressInfo'] is not None and row['addressInfo'].get(
-                            'zip') else '-'),
-                        row['addressInfo']['location'] if row['addressInfo'] is not None and row['addressInfo'].get(
-                            'location') is not None else '-',
-                        county_name,
-                        row.get('priceInfo') or '-',
-                        str(row['beds']),
-                        str(row['baths']),
-                        row['sqftInfo'] or '-',
-                        round(float(row['priceInfo'])/float(row['sqftInfo'])
-                            ) if row['sqftInfo'] is not None and row['priceInfo'] is not None and float(row['sqftInfo']) > 0 else '-',
-                        str(row['lotSize']),
-                        str(row['hoaDues']),
-                        str(row['yearBuilt']),
-                        row['timezone'],
-                        str(row['listingAddedDate']),
-                        row['status'],
-                        str(row['status_date']),
-                        str(row['url'])
-                    ]
-                    writer.writerow(generated_row)
-            send_mail(filename)
-            return filename
-        except Exception as e:
-            print(str(e))
+                    f, delimiter=',', quoting=csv.QUOTE_ALL)
+        with open(filename, 'a', newline='', encoding="utf-8") as f:
+            writer = csv.writer(
+                f, delimiter=',', quoting=csv.QUOTE_ALL, doublequote=False)
+            for row in data:
+                if not is_city_allowed(county, row):
+                    continue
+                if row['propertyTypeName'].lower() in list(map(str.lower, EXCLUDED_PROP_TYPES)):
+                    continue
+                generated_row = [
+                    row['mlsId'],
+                    row['propertyTypeName'],
+                    row['owner_name'],
+                    row['parcel_no'],
+                    row['addressInfo']['formattedStreetLine'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                        'formattedStreetLine') is not None else '-',
+                    row['addressInfo']['city'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                        'city') is not None else '-',
+                    row['addressInfo']['state'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                        'state') else '-',
+                    str(row['addressInfo']['zip']
+                        if row['addressInfo'] is not None and row['addressInfo'].get(
+                        'zip') else '-'),
+                    row['addressInfo']['location'] if row['addressInfo'] is not None and row['addressInfo'].get(
+                        'location') is not None else '-',
+                    county_name,
+                    row.get('priceInfo') or '-',
+                    str(row['beds']),
+                    str(row['baths']),
+                    row['sqftInfo'] or '-',
+                    round(float(row['priceInfo'])/float(row['sqftInfo'])
+                        ) if row['sqftInfo'] is not None and row['priceInfo'] is not None and float(row['sqftInfo']) > 0 else '-',
+                    str(row['lotSize']),
+                    str(row['hoaDues']),
+                    str(row['yearBuilt']),
+                    row['timezone'],
+                    str(row['listingAddedDate']),
+                    row['status'],
+                    str(row['status_date']),
+                    str(row['url'])
+                ]
+                writer.writerow(generated_row)
+        return filename
