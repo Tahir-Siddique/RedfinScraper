@@ -231,8 +231,8 @@ class RedfinScrapper:
         # try:
         filename = 'Redfin %s.csv' % (
             START_DATE)
-        data = list(
-            sorted(data, key=lambda row: str(row['status_date']), reverse=True))
+        # data = list(
+        #     sorted(data, key=lambda row: str(row['status_date']), reverse=True))
         headers = ["MLS#", "Property Type", "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
                 "SQUARE FEET", "$/SQUARE FEET", "LOT SIZE", "HOA/MONTH", "YEAR BUILT", 'TIMEZONE', "LISTING ADDED DATE", 'STATUS', 'STATUS UPDATED ON', 'URL']
         if not os.path.isfile(filename):
