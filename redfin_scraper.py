@@ -208,7 +208,7 @@ class RedfinScrapper:
         # print(data)
         data = list(
             sorted(data, key=lambda row: str(row['status_date']) if row else None, reverse=True))
-        headers = ["MLS#", "Property Type", "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
+        headers = ["MLS#", "Property Type",  "Owner Name",  "Parcel No.", "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
                 "SQUARE FEET", "$/SQUARE FEET", "LOT SIZE", "HOA/MONTH", "YEAR BUILT", 'TIMEZONE', "LISTING ADDED DATE", 'STATUS', 'STATUS UPDATED ON', 'URL']
         if not os.path.isfile(filename):
             with open(filename, 'w', newline='', encoding="utf-8") as f:
@@ -228,6 +228,8 @@ class RedfinScrapper:
                     generated_row = [
                         row['mlsId'],
                         row['propertyTypeName'],
+                        row['owner_name'],
+                        row['parcel_no'],
                         row['addressInfo']['formattedStreetLine'] if row['addressInfo'] is not None and row['addressInfo'].get(
                             'formattedStreetLine') is not None else '-',
                         row['addressInfo']['city'] if row['addressInfo'] is not None and row['addressInfo'].get(
