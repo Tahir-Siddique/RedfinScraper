@@ -231,7 +231,7 @@ class RedfinScrapper:
         # try:
         filename = 'Redfin %s.csv' % (
             START_DATE)
-        print(data)
+        # print(data)
         # data = list(
         #     sorted(data, key=lambda row: str(row['status_date']), reverse=True))
         headers = ["MLS#", "Property Type", "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
@@ -246,6 +246,7 @@ class RedfinScrapper:
             writer = csv.writer(
                 f, delimiter=',', quoting=csv.QUOTE_ALL, doublequote=False)
             for row in data:
+                print(row)
                 if not is_city_allowed(county, row):
                     continue
                 if row['propertyTypeName'].lower() in list(map(str.lower, EXCLUDED_PROP_TYPES)):
