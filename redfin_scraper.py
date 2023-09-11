@@ -231,6 +231,7 @@ class RedfinScrapper:
         # try:
         filename = 'Redfin %s.csv' % (
             START_DATE)
+        print(data)
         # data = list(
         #     sorted(data, key=lambda row: str(row['status_date']), reverse=True))
         headers = ["MLS#", "Property Type", "Address", "City", "State", "ZIP", "Location", "County", "Price", "BEDS", "BATHS",
